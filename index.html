@@ -1,89 +1,177 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Algorithmic Password Evaluator</title>
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.55.0/build/stlite.css"
-    />
-  </head>
-  <body>
-    <div id="root"></div>
-    
-    <script src="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.55.0/build/stlite.js"></script>
-    
-    <script>
-      // window.onload guarantees stlite.js is fully loaded and ready in memory
-      window.onload = function() {
-        stlite.mount(
-          {
-            requirements: ["pandas", "numpy", "plotly", "pyarrow"],
-            entrypoint: "app.py",
-            files: {
-              "app.py": `
-import streamlit as st
-import math
-from collections import Counter
-import plotly.express as px
-import pandas as pd
-
-st.set_page_config(page_title="Password Evaluator", layout="wide")
-
-st.markdown("""
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Algorithmic Password Intelligence Engine</title>
     <style>
-    .stApp { background-color: #0f172a !important; color: #f8fafc !important; }
-    p, span, label, h3 { color: #cbd5e1 !important; }
-    section[data-testid="stSidebar"] { background-color: #1e293b !important; border-right: 1px solid #334155; }
-    table { color: #f8fafc !important; background-color: #1e293b !important; border-radius: 8px; width: 100%; }
-    th { background-color: #334155 !important; color: #38bdf8 !important; }
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=JetBrains+Mono:wght@400;700&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap');
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            background: radial-gradient(circle at 50% 50%, #0f172a 0%, #020617 100%) !important;
+            color: #f1f5f9;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            padding: 40px;
+            min-height: 100vh;
+        }
+
+        .container { display: flex; gap: 40px; max-width: 1400px; margin: 0 auto; }
+        .main-panel { flex: 1.8; }
+        .sidebar { flex: 1.2; }
+
+        .sub-header { color: #ef4444; font-weight: 800; font-size: 0.85rem; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 5px; }
+        
+        .custom-title {
+            font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 2.8rem; color: #0f172a;
+            text-shadow: -1px -1px 0 #ef4444, 1px -1px 0 #ef4444, -1px 1px 0 #ef4444, 1px 1px 0 #ef4444, 0 0 15px rgba(239, 68, 68, 0.6);
+            letter-spacing: 0.05em; margin-bottom: 15px;
+        }
+
+        .desc { color: #94a3b8; font-size: 1.1rem; margin-bottom: 35px; }
+        
+        /* Input Box Styling */
+        .input-group { background: #1e293b; border: 1px solid #334155; padding: 20px; border-radius: 12px; margin-bottom: 30px; }
+        .input-group label { display: block; color: #38bdf8; font-family: 'Orbitron', sans-serif; font-size: 0.85rem; margin-bottom: 10px; letter-spacing: 0.1em; }
+        .input-group input { width: 100%; background: #0f172a; border: 1px solid #334155; padding: 12px; color: #fff; font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; border-radius: 6px; }
+
+        /* Threat Banner */
+        .threat-banner { background: #1e293b; padding: 20px; border-radius: 0 12px 12px 0; margin-bottom: 30px; border: 1px solid #334155; border-left-width: 4px; }
+        .banner-label { font-weight: 800; font-size: 0.85rem; letter-spacing: 0.1em; margin-bottom: 5px; }
+        .banner-title { color: #fff; font-size: 1.6rem; font-weight: 700; margin-bottom: 10px; }
+        .banner-desc { color: #e2e8f0; font-size: 0.95rem; }
+
+        /* Metrics */
+        .metrics-grid { display: flex; gap: 20px; margin-bottom: 30px; }
+        .metric-card { flex: 1; background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 22px 24px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.4); }
+        .metric-label { color: #94a3b8; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+        .metric-value { font-family: 'JetBrains Mono', monospace; color: #fff; font-weight: 700; font-size: 2rem; }
+
+        /* Table Grid */
+        .threat-matrix { width: 100%; border-collapse: collapse; margin-top: 15px; background-color: #0f172a; border-radius: 8px; overflow: hidden; border: 1px solid #1e293b; }
+        .threat-matrix th { background-color: #1e293b; color: #38bdf8; text-align: left; padding: 12px; font-family: 'Orbitron', sans-serif; font-size: 0.8rem; letter-spacing: 0.05em; }
+        .threat-matrix td { padding: 12px; border-bottom: 1px solid #1e293b; color: #cbd5e1; }
+
+        h3 { color: #38bdf8; font-size: 1.1rem; font-family: 'Orbitron', sans-serif; letter-spacing: 0.1em; font-weight: 700; margin-bottom: 15px; text-transform: uppercase; }
     </style>
-""", unsafe_allow_html=True)
+</head>
+<body>
 
-st.markdown('<h1 style="color: #ef4444; font-family: sans-serif; font-weight: 800;">🔐 Algorithmic Password Evaluator</h1>', unsafe_allow_html=True)
-st.markdown("Evaluate string complexity using linear-time Shannon Entropy metrics and token frequency analysis.")
+    <div class="container">
+        <div class="main-panel">
+            <p class="sub-header">SecOps Analytical Engine</p>
+            <h1 class="custom-title">Algorithmic Password Evaluator</h1>
+            <p class="desc">Real-time execution layer evaluating information density vectors via Shannon Entropy metrics.</p>
 
-def analyze_password(password):
-    if not password:
-        return 0, {}, "Empty input"
-    n = len(password)
-    counts = Counter(password)
-    entropy = 0.0
-    for char, count in counts.items():
-        prob = count / n
-        entropy -= prob * math.log2(prob)
-    if entropy < 2.5:
-        strength = "🔴 Weak (Highly Predictable / Repetitive)"
-    elif entropy < 3.5:
-        strength = "🟡 Moderate (Basic Alphanumeric Mixture)"
-    else:
-        strength = "🟢 Strong (High Randomness / Cryptographically Sound)"
-    return round(entropy, 2), counts, strength
+            <div class="input-group">
+                <label>Enter Target String:</label>
+                <input type="text" id="passwordInput" value="123456" placeholder="Type to evaluate...">
+            </div>
 
-st.sidebar.markdown('<h2 style="color: #f8fafc; font-size: 1.5rem;">User Input</h2>', unsafe_allow_html=True)
-user_input = st.sidebar.text_input("Enter a password string to test:", value="P@ssw0rd123!", type="password")
+            <div class="threat-banner" id="threatBanner" style="border-left-color: #ef4444;">
+                <p class="banner-label" id="bannerLabel" style="color: #ef4444;">THREAT LEVEL ASSESSMENT</p>
+                <div class="banner-title" id="bannerTitle">CRITICAL WEAKNESS</div>
+                <div class="banner-desc" id="bannerDesc">🚨 MATCHED KNOWN LEAK SIGNATURE: This string exists verbatim in global breach dictionaries.</div>
+            </div>
 
-if user_input:
-    entropy_score, char_counts, strength_rating = analyze_password(user_input)
-    col1, col2, col3 = st.columns(3)
-    col1.metric("Calculated Shannon Entropy", f"{entropy_score} bits")
-    col2.metric("String Total Length", f"{len(user_input)} chars")
-    col3.metric("Unique Character Sets", f"{len(char_counts)}")
-    st.markdown(f"### Complexity Tier: {strength_rating}")
-    st.markdown("<hr style='border-color: #334155;'>", unsafe_allow_html=True)
-    st.markdown('<h3>Character Frequency Vector</h3>', unsafe_allow_html=True)
-    df_freq = pd.DataFrame(list(char_counts.items()), columns=['Character', 'Occurrence Count'])
-    fig = px.bar(df_freq, x='Character', y='Occurrence Count', template="plotly_dark", color_discrete_sequence=['#38bdf8'])
-    fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
-    st.plotly_chart(fig, use_container_width=True)
-`
+            <h3>Cryptographic Metrics</h3>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-label">Shannon Entropy</div>
+                    <div class="metric-value" id="entropyMetric">2.58 Bits</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Payload Length</div>
+                    <div class="metric-value" id="lengthMetric">6 Chars</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Unique Tokens</div>
+                    <div class="metric-value" id="tokenMetric">6</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <h3>Top 10 Most Common Passwords</h3>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 15px;">Global data leak benchmarks displaying structural vulnerability signatures.</p>
+            
+            <table class="threat-matrix">
+                <thead>
+                    <tr><th>Rank</th><th>Signature</th><th>Entropy</th><th>Crack Time</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>#1</td><td><b style="color:#ef4444; font-family:monospace;">123456</b></td><td>2.58 bits</td><td>&lt; 1 ms</td></tr>
+                    <tr><td>#2</td><td><b style="color:#ef4444; font-family:monospace;">password</b></td><td>3.00 bits</td><td>&lt; 1 ms</td></tr>
+                    <tr><td>#3</td><td><b style="color:#ef4444; font-family:monospace;">123456789</b></td><td>3.17 bits</td><td>&lt; 1 ms</td></tr>
+                    <tr><td>#4</td><td><b style="color:#f59e0b; font-family:monospace;">qwerty</b></td><td>2.58 bits</td><td>&lt; 1 ms</td></tr>
+                    <tr><td>#5</td><td><b style="color:#f59e0b; font-family:monospace;">unknown</b></td><td>2.81 bits</td><td>&lt; 1 ms</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const topLeaked = ["123456", "password", "123456789", "qwerty", "unknown", "12345", "12345678", "111111", "654321", "123123"];
+        const sequentialRuns = ["0123456789", "9876543210", "abcdefghijklmnopqrstuvwxyz"];
+
+        function runAnalysis() {
+            const password = document.getElementById('passwordInput').value;
+            const normalized = password.trim().toLowerCase();
+            const n = password.length;
+
+            if (n === 0) {
+                updateUI(0, 0, 0, "EMPTY", "🚨 NO DATA INPUTTED", "#ef4444");
+                return;
             }
-          },
-          document.getElementById("root")
-        );
-      };
+
+            // O(N) Token Frequency tracking mapping
+            const counts = {};
+            for (let i = 0; i < n; i++) {
+                counts[password[i]] = (counts[password[i]] || 0) + 1;
+            }
+            const uniqueTokens = Object.keys(counts).length;
+
+            // Calculate Shannon Entropy
+            let entropy = 0;
+            for (let char in counts) {
+                let prob = counts[char] / n;
+                entropy -= prob * Math.log2(prob);
+            }
+            entropy = Math.round(entropy * 100) / 100;
+
+            // Pattern checking
+            let isSequential = false;
+            if (normalized.length >= 3) {
+                isSequential = sequentialRuns.some(run => run.includes(normalized));
+            }
+
+            // Route UI based on rules
+            if (topLeaked.includes(normalized)) {
+                updateUI(entropy, n, uniqueTokens, "CRITICAL WEAKNESS", "🚨 MATCHED KNOWN LEAK SIGNATURE: Exists verbatim in global breach dictionaries. Instant compromise.", "#ef4444");
+            } else if (isSequential) {
+                updateUI(entropy, n, uniqueTokens, "CRITICAL WEAKNESS", "🚨 SEQUENTIAL PATTERN PENALTY: Linear run detected (e.g. 1234 or abcd). Easily guessed.", "#ef4444");
+            } else if (entropy < 2.5) {
+                updateUI(entropy, n, uniqueTokens, "CRITICAL WEAKNESS", "🔴 Highly predictable pattern or extreme repetition. Susceptible to dictionary attacks.", "#ef4444");
+            } else if (entropy < 3.5) {
+                updateUI(entropy, n, uniqueTokens, "MODERATE EXPOSURE", "🟡 Standard alphanumeric structure. Susceptible to targeted brute-forcing.", "#f59e0b");
+            } else {
+                updateUI(entropy, n, uniqueTokens, "CRYPTOGRAPHICALLY SECURE", "🟢 Excellent randomness density. Resilient against standard guessing models.", "#10b981");
+            }
+        }
+
+        function updateUI(entropy, length, tokens, tier, desc, color) {
+            document.getElementById('entropyMetric').innerText = entropy + " Bits";
+            document.getElementById('lengthMetric').innerText = length + " Chars";
+            document.getElementById('tokenMetric').innerText = tokens;
+            document.getElementById('bannerTitle').innerText = tier;
+            document.getElementById('bannerDesc').innerText = desc;
+            document.getElementById('threatBanner').style.borderLeftColor = color;
+            document.getElementById('bannerLabel').style.color = color;
+        }
+
+        document.getElementById('passwordInput').addEventListener('input', runAnalysis);
+        runAnalysis(); // Boot init
     </script>
-  </body>
+</body>
 </html>
