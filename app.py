@@ -35,13 +35,13 @@ st.markdown("""
         font-family: 'Orbitron', sans-serif;
         font-weight: 900;
         font-size: 2.8rem;
-        color: #0f172a; /* Dark core */
+        color: #0f172a;
         text-shadow: 
             -1px -1px 0 #ef4444,  
              1px -1px 0 #ef4444,
             -1px  1px 0 #ef4444,
              1px  1px 0 #ef4444,
-             0 0 15px rgba(239, 68, 68, 0.6); /* Red Cyber Glow Outline */
+             0 0 15px rgba(239, 68, 68, 0.6);
         letter-spacing: 0.05em;
         margin-top: 5px;
         margin-bottom: 15px;
@@ -54,18 +54,24 @@ st.markdown("""
         color: #38bdf8 !important;
     }
     
-    /* CRITICAL FIX: High-Contrast Metric Value Formatting */
+    /* CRITICAL FIX: Prevent metric text truncation (fixes 'le...' and '8 cha...') */
+    [data-testid="stMetricValue"], [data-testid="stMetricLabel"], [data-testid="stMetric"] * {
+        white-space: normal !important;
+        word-break: break-word !important;
+    }
+    
     [data-testid="stMetricValue"] {
         font-family: 'JetBrains Mono', monospace !important;
-        color: #ffffff !important; /* Force pure crisp white numbers */
+        color: #ffffff !important;
         font-weight: 700 !important;
-        font-size: 2.2rem !important;
+        font-size: 1.8rem !important; /* Slightly optimized size to fit labels perfectly */
     }
     [data-testid="stMetricLabel"] {
-        color: #94a3b8 !important; /* Soft grey labels */
+        color: #94a3b8 !important;
         font-weight: 600 !important;
         text-transform: uppercase;
         letter-spacing: 0.05em;
+        font-size: 0.75rem !important;
     }
     
     /* Sidebar Layout Fix */
@@ -76,10 +82,10 @@ st.markdown("""
     
     /* Premium High-Contrast Metric Cards */
     div[data-testid="stMetric"] {
-        background: #1e293b !important; /* Deep solid slate background */
+        background: #1e293b !important;
         border: 1px solid #334155 !important;
         border-radius: 12px;
-        padding: 22px 24px;
+        padding: 20px 18px;
         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
         transition: transform 0.2s, border-color 0.2s;
     }
@@ -113,9 +119,6 @@ st.markdown("""
         border-bottom: 1px solid #1e293b;
         color: #cbd5e1;
     }
-    .threat-matrix tr:hover {
-        background-color: rgba(56, 189, 248, 0.02);
-    }
     
     /* Section Headings */
     h3 {
@@ -130,11 +133,20 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- ALGORITHMIC COMPLEXITY ENGINE ---
+# --- ALGORITHMIC COMPLEXITY ENGINE WITH INTEL PENALTIES ---
 def analyze_password(password):
     if not password:
         return 0.0, {}, "EMPTY", "🚨 NO DATA INPUTTED", "#ef4444"
         
+    normalized = password.strip().lower()
+    
+    # 1. HARDCODED THREAT DICTIONARY PENALTY
+    top_leaked = ["123456", "password", "123456789", "qwerty", "unknown", "12345", "12345678", "111111", "654321", "123123"]
+    
+    # 2. SEQUENTIAL PATTERN RUN PENALTY (e.g. "abcdef", "123456")
+    sequential_runs = ["0123456789", "9876543210", "abcdefghijklmnopqrstuvwxyz"]
+    is_sequential = any(normalized in run for run in sequential_runs) if len(normalized) >= 3 else False
+
     n = len(password)
     counts = Counter(password)
     
@@ -144,18 +156,27 @@ def analyze_password(password):
         prob = count / n
         entropy -= prob * math.log2(prob)
         
-    if entropy < 2.5:
-        return round(entropy, 2), counts, "CRITICAL WEAKNESS", "🔴 Highly predictable pattern. Susceptible to trivial dictionary attacks.", "#ef4444"
+    # --- INTELLIGENT ROUTING TIERS ---
+    if normalized in top_leaked:
+        return round(entropy, 2), counts, "CRITICAL WEAKNESS", "🚨 MATCHED KNOWN LEAK SIGNATURE: This string exists verbatim in global breach dictionaries. Instant compromise.", "#ef4444"
+        
+    elif is_sequential:
+        return round(entropy, 2), counts, "CRITICAL WEAKNESS", "🚨 SEQUENTIAL PATTERN PENALTY: Linear run detected (e.g. 1234 or abcd). Easily guessed by optimization scripts.", "#ef4444"
+        
+    elif entropy < 2.5:
+        return round(entropy, 2), counts, "CRITICAL WEAKNESS", "🔴 Highly predictable pattern or extreme repetition. Susceptible to trivial dictionary attacks.", "#ef4444"
+        
     elif entropy < 3.5:
-        return round(entropy, 2), counts, "MODERATE EXPOSURE", "🟡 Standard alphanumeric structure. Susceptible to targeted brute-forcing.", "#f59e0b"
+        return round(entropy, 2), counts, "MODERATE EXPOSURE", "🟡 Standard alphanumeric structure. Susceptible to targeted cluster brute-forcing.", "#f59e0b"
+        
     else:
-        return round(entropy, 2), counts, "CRYPTOGRAPHICALLY SECURE", "🟢 Excellent randomness density. Resilient against standard algorithmic guessing.", "#10b981"
+        return round(entropy, 2), counts, "CRYPTOGRAPHICALLY SECURE", "🟢 Excellent randomness density. Resilient against standard algorithmic guessing models.", "#10b981"
 
 # --- SIDEBAR INTERFACE ---
 st.sidebar.markdown('<p style="color: #38bdf8; font-weight: 800; font-size: 0.85rem; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0;">Control Panel</p>', unsafe_allow_html=True)
 st.sidebar.markdown('<h2 style="color: #ffffff; font-weight: 800; font-size: 1.5rem; margin-top: 5px; margin-bottom: 25px;">Input Vector</h2>', unsafe_allow_html=True)
 
-user_input = st.sidebar.text_input("ENTER TARGET STRING:", value="P@ssw0rd123!", type="password")
+user_input = st.sidebar.text_input("ENTER TARGET STRING:", value="123456", type="password")
 
 st.sidebar.markdown("<br><hr style='border-color: #1e293b;'><br>", unsafe_allow_html=True)
 st.sidebar.markdown("""
@@ -166,7 +187,6 @@ st.sidebar.markdown("""
 """, unsafe_allow_html=True)
 
 # --- MAIN DASHBOARD INTERFACE ---
-# Header Area
 st.markdown('<p style="color: #ef4444; font-weight: 800; font-size: 0.85rem; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 0;">SecOps Analytical Engine</p>', unsafe_allow_html=True)
 st.markdown('<h1 class="custom-title">Algorithmic Password Evaluator</h1>', unsafe_allow_html=True)
 st.markdown('<p style="color: #94a3b8; font-size: 1.1rem; margin-bottom: 35px;">Real-time execution layer evaluating information density vectors via Shannon Entropy metrics.</p>', unsafe_allow_html=True)
@@ -217,7 +237,6 @@ with col_main:
         st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
 
 with col_threat:
-    # --- TOP 10 COMMON PASSWORDS REFERENCE COMPONENT ---
     st.markdown('<h3>Top 10 Most Common Passwords</h3>', unsafe_allow_html=True)
     st.markdown('<p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 15px;">Global data leak benchmarks displaying structural vulnerability signatures.</p>', unsafe_allow_html=True)
     
